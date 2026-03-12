@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Login</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    min-height: 100vh;
+  }
+  .login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+  .login-box {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.1);
+    width: 300px;
+  }
+  .dashboard-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .nav {
+    background: #fff;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav h1 { margin: 0; font-size: 1.2rem; }
+  .nav button { width: auto; padding: .5rem 1rem; margin: 0; }
+  .main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem 1rem;
+  }
+  .dashboard {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.1);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  /* Image Styling */
+  .dashboard-img-preview {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    background-color: #eee;
+    display: none; /* Hidden by default until image loaded */
+  }
+
+  h2 { margin-top: 0; text-align: center; margin-bottom: 1.5rem; }
+  h3 { margin-top: 0; margin-bottom: 1rem; }
+  label { display: block; margin-bottom: .5rem; }
+  input {
+    width: 100%;
+    padding: .5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+  button {
+    width: 100%;
+    padding: .7rem;
+    background: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  button:hover { background: #218838; }
+  .btn-danger { background: #dc3545; }
+  .btn-danger:hover { background: #c82333; }
+  .btn-secondary { background: #6c757d; }
+  .btn-secondary:hover { background: #5a6268; }
+  .btn-small { width: auto; padding: .5rem 1rem; }
+  .error, .success { font-size: .9rem; display: none; margin-bottom: 1rem; }
+  .error { color: red; }
+  .success { color: green; }
+  .toggle-btn { background: none; color: #007bff; border: none; cursor: pointer; width: auto; }
+  .toggle-btn:hover { text-decoration: underline; }
+  .hidden { display: none !important; }
+  .user-info-box { background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; }
+  .user-info-box p { margin: .5rem 0; }
+  .user-info-box span { font-weight: bold; }
+  .welcome-banner { background: #28a745; color: #fff; padding: 2rem; text-align: center; border-radius: 8px; margin-bottom: 1.5rem; }
+  .welcome-banner h2 { color: #fff; margin-bottom: .5rem; }
+  .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .card { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,.1); }
+  .card h3 { margin-top: 0; margin-bottom: 1rem; }
+  .remember-me { display: flex; align-items: center; }
+  .remember-me input { width: auto; margin: 0 .5rem 0 0; }
+  .remember-me label { margin: 0; display: inline; }
+  .settings-menu {
+    position: fixed;
+    top: 0;
+    right: -320px;
+    width: 320px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -2px 0 10px rgba(0,0,0,.1);
+    transition: right .3s ease;
+    padding: 1.5rem;
+    z-index: 1000;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .settings-menu.open { right: 0; }
+  .settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s ease;
+    z-index: 999;
+  }
+  .settings-overlay.open { opacity: 1; visibility: visible; }
+  .settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+  .settings-header h2 { margin: 0; }
+  .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; width: auto; padding: .5rem; margin: 0; border-radius: 50%; }
+  .close-btn:hover { background: #f4f4f4; }
+  .settings-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+  .settings-section:last-child { border-bottom: none; }
+  .settings-section h3 { font-size: 1rem; margin-bottom: 1rem; }
+  .settings-btn { display: flex; align-items: center; justify-content: center; gap: .5rem; }
+  .icon-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; width: auto; padding: .5rem; margin: 0; border-radius: 50%; }
+  .icon-btn:hover { background: #f4f4f4; }
+  .profile-display { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+  .avatar { width: 60px; height: 60px; background: #28a745; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; flex-shrink: 0; }
+  .profile-name { font-size: 1.2rem; font-weight: bold; }
+  .profile-email { color: #666; font-size: .9rem; }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #f1f1f1; }
+  ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .content-grid { grid-template-columns: 1fr; }
+    .settings-menu { width: 100%; right: -100%; }
+    .login-box { width: 100%; max-width: 300px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Login Page -->
+<div id="loginPage" class="login-page">
+  <div class="login-box">
+    <h2 id="formTitle">Login</h2>
+    
+    <form id="loginForm">
+      <div id="userInfoDisplay" class="user-info-box hidden">
+        Welcome back, <span id="displayFullName"></span>!<br>
+        <small>Logged in as: <span id="displayUsername"></span></small>
+      </div>
+
+      <label for="username">Username</label>
+      <input type="text" id="username" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" required>
+
+      <div class="remember-me">
+        <input type="checkbox" id="rememberMe">
+        <label for="rememberMe">Remember me</label>
+      </div>
+
+      <button type="submit">Log in</button>
+      <p class="error" id="loginError"></p>
+      <button type="button" class="toggle-btn" id="showRegister">Don't have an account? Register</button>
+    </form>
+
+    <form id="registerForm" class="hidden">
+      <label for="fullName">Full Name</label>
+      <input type="text" id="fullName" placeholder="Enter your full name" required>
+
+      <label for="regEmail">Email</label>
+      <input type="email" id="regEmail" placeholder="Enter your email" required>
+
+      <label for="regUsername">Username</label>
+      <input type="text" id="regUsername" placeholder="Choose a username" required>
+
+      <label for="regPassword">Password</label>
+      <input type="password" id="regPassword" placeholder="Create a password" required>
+
+      <label for="confirmPassword">Confirm Password</label>
+      <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+
+      <button type="submit">Register</button>
+      <p class="success" id="registerSuccess"></p>
+      <p class="error" id="registerError"></p>
+      <button type="button" class="toggle-btn" id="showLogin">Already have an account? Log in</button>
+    </form>
+  </div>
+</div>
+
+<!-- Main Dashboard Page -->
+<div id="mainPage" class="dashboard-wrapper hidden">
+  <nav class="nav">
+    <h1>My Dashboard</h1>
+    <button type="button" class="icon-btn" id="settingsBtn">⚙️</button>
+  </nav>
+
+  <div class="main-content">
+    <div class="dashboard">
+      <!-- Image Display -->
+      <img id="dashboardImg" class="dashboard-img-preview" alt="Dashboard Image">
+
+      <div class="welcome-banner">
+        <h2>Welcome, <span id="welcomeName"></span>!</h2>
+        <p>Good to see you again!</p>
+      </div>
+
+      <div class="user-info-box">
+        <h3>Your Profile</h3>
+        <p><strong>Full Name:</strong> <span id="profileFullName"></span></p>
+        <p><strong>Username:</strong> <span id="profileUsername"></span></p>
+        <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+        <p><strong>Member Since:</strong> <span id="profileJoined"></span></p>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <h3>Quick Stats</h3>
+          <p>Active Sessions: 1</p>
+          <p>Account Status: Verified</p>
+          <p>Last Activity: Online</p>
+        </div>
+        <div class="card">
+          <h3>Recent Activity</h3>
+          <p>Last Login: Just now</p>
+          <p>Profile Updated: Today</p>
+          <p>Settings Changed: Never</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1rem;">
+        <h3>Skills</h3>
+        <label for="file">Python:</label>
+        <progress id="file" value="70" max="100"> 32% </progress>
+        <label for="file">HTML:</label>
+        <progress id="file" value="56" max="100"> 32% </progress>
+        <label for="file">Java:</label>
+        <progress id="file" value="69" max="100"> 32% </progress>
+      </div>
+      <div class="card" style="margin-top: 1rem;">
+        <h3>Email:</h3>
+        <p>reyjustinepatillas@gmail.com</p>
+      </div>
+      <div class="card" style="margin-top: 1rem;">
+        <h3>Address:</h3>
+        <p>Capulay, Liloan</p>
+        <h3>Age</h3>
+        <p>24</p>
+      </div>
+       <div class="card" style="margin-top: 1rem;">
+        <h3>Contact number:</h3>
+        <p>09</p>
+      </div>
+
+<!-- Settings Menu -->
+<div class="settings-overlay" id="settingsOverlay"></div>
+<div class="settings-menu" id="settingsMenu">
+  <div class="settings-header">
+    <h2>Settings</h2>
+    <button type="button" class="close-btn" id="closeSettings">×</button>
+  </div>
+
+  <div class="profile-display">
+    <div class="avatar" id="settingsAvatar"></div>
+    <div>
+      <div class="profile-name" id="settingsName"></div>
+      <div class="profile-email" id="settingsEmail"></div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h3>Edit Profile</h3>
+    <form id="editProfileForm">
+      <label for="editFullName">Full Name</label>
+      <input type="text" id="editFullName" required>
+
+      <label for="editEmail">Email</label>
+      <input type="email" id="editEmail" required>
+
+      <label for="editUsername">Username</label>
+      <input type="text" id="editUsername" required>
+
+      <p class="success" id="editSuccess"></p>
+      <p class="error" id="editError"></p>
+      <button type="submit" class="btn-secondary">Save Changes</button>
+    </form>
+  </div>
+
+  <div class="settings-section">
+    <h3>Change Password</h3>
+    <form id="changePasswordForm">
+      <label for="currentPassword">Current Password</label>
+      <input type="password" id="currentPassword" required>
+
+      <label for="newPassword">New Password</label>
+      <input type="password" id="newPassword" required>
+
+      <label for="confirmNewPassword">Confirm New Password</label>
+      <input type="password" id="confirmNewPassword" required>
+
+      <p class="success" id="passwordSuccess"></p>
+      <p class="error" id="passwordError"></p>
+      <button type="submit" class="btn-secondary">Change Password</button>
+    </form>
+  </div>
+
+  <!-- IMAGE UPLOAD SECTION -->
+  <div class="settings-section">
+    <h3>Appearance</h3>
+    <label for="imageUpload">Upload Header Image</label>
+    <input type="file" id="imageUpload" accept="image/*">
+    <p style="font-size: 0.8rem; color: #666;">Image will be saved automatically.</p>
+  </div>
+
+  <div class="settings-section">
+    <h3>Preferences</h3>
+    <form id="preferencesForm">
+      <div class="remember-me">
+        <input type="checkbox" id="emailNotifications" checked>
+        <label for="emailNotifications">Email Notifications</label>
+      </div>
+      <div class="remember-me">
+        <input type="checkbox" id="darkMode">
+        <label for="darkMode">Dark Mode</label>
+      </div>
+      <div class="remember-me">
+        <input type="checkbox" id="autoLogin">
+        <label for="autoLogin">Auto Login</label>
+      </div>
+      <p class="success" id="prefSuccess"></p>
+      <button type="submit" class="btn-secondary">Save Preferences</button>
+    </form>
+  </div>
+
+  <div class="settings-section">
+    <h3>Security</h3>
+    <form id="securityForm">
+      <div class="remember-me">
+        <input type="checkbox" id="twoFactor">
+        <label for="twoFactor">Two-Factor Authentication</label>
+      </div>
+      <div class="remember-me">
+        <input type="checkbox" id="loginAlerts">
+        <label for="loginAlerts">Login Alerts</label>
+      </div>
+      <button type="submit" class="btn-secondary">Update Security</button>
+    </form>
+  </div>
+  <div class="settings-section">
+    <h3>Additional Info</h3>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">This section demonstrates scrolling within the settings menu when there is a lot of content.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">Keep scrolling to see more options and the logout button at the bottom.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">Ut enim ad minim veniam, quis nostrud exercitation.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">Duis aute irure dolor in reprehenderit in voluptate velit.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">Excepteur sint occaecat cupidatat non proident.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">Sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">More placeholder text to demonstrate scrolling functionality.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">The settings menu now has its own scrollbar.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">You can scroll through all settings independently.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">This is useful for mobile devices with small screens.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">Keep going... almost at the logout button!</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">Almost there... just a bit more content.</p>
+    <p style="font-size: .9rem; color: #666; margin-bottom: 1rem;">Almost at the bottom now.</p>
+  </div>
+
+  <div class="settings-section">
+    <h3>Account</h3>
+    <button type="button" class="btn-danger" id="logoutBtn">Logout</button>
+    <button type="button" class="btn-secondary" style="margin-top: .5rem;" id="deleteAccountBtn">Delete Account</button>
+  </div>
+</div>
+
+<script>
+  // Elements
+  const loginPage = document.getElementById('loginPage');
+  const mainPage = document.getElementById('mainPage');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const formTitle = document.getElementById('formTitle');
+  const showRegister = document.getElementById('showRegister');
+  const showLogin = document.getElementById('showLogin');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+  const rememberMeCheckbox = document.getElementById('rememberMe');
+  const userInfoDisplay = document.getElementById('userInfoDisplay');
+  const displayFullName = document.getElementById('displayFullName');
+  const displayUsername = document.getElementById('displayUsername');
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsMenu = document.getElementById('settingsMenu');
+  const settingsOverlay = document.getElementById('settingsOverlay');
+  const closeSettings = document.getElementById('closeSettings');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+  const editProfileForm = document.getElementById('editProfileForm');
+  const changePasswordForm = document.getElementById('changePasswordForm');
+  const preferencesForm = document.getElementById('preferencesForm');
+  const securityForm = document.getElementById('securityForm');
+  
+  // Image Elements
+  const dashboardImg = document.getElementById('dashboardImg');
+  const imageUpload = document.getElementById('imageUpload');
+
+  let currentUser = null;
+
+  // --- COMBINED CODE START ---
+
+  /* TOGGLE SETTINGS */
+  function toggleSettings() {
+    settingsMenu.classList.toggle('open');
+    settingsOverlay.classList.toggle('open');
+    if (settingsMenu.classList.contains('open')) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+
+  /* LOAD SAVED IMAGE ON STARTUP */
+  window.addEventListener('load', function() {
+    const savedImage = localStorage.getItem('dashboardImage');
+    if (savedImage) {
+      dashboardImg.src = savedImage;
+      dashboardImg.style.display = 'block';
+    }
+  });
+
+  /* IMAGE UPLOAD HANDLER */
+  imageUpload.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        dashboardImg.src = e.target.result;
+        dashboardImg.style.display = 'block';
+        localStorage.setItem('dashboardImage', e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // --- EXISTING CODE CONTINUES ---
+
+  // Check if user is already logged in
+  function checkLogin() {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      currentUser = JSON.parse(savedUser);
+      showMainPage(currentUser);
+    }
+  }
+
+  // Show main page
+  function showMainPage(user) {
+    loginPage.classList.add('hidden');
+    mainPage.classList.remove('hidden');
+    
+    document.getElementById('welcomeName').textContent = user.fullName;
+    document.getElementById('profileFullName').textContent = user.fullName;
+    document.getElementById('profileUsername').textContent = user.username;
+    document.getElementById('profileEmail').textContent = user.email;
+    document.getElementById('profileJoined').textContent = new Date(user.createdAt).toLocaleDateString();
+
+    // Update settings menu
+    document.getElementById('settingsAvatar').textContent = user.fullName.charAt(0).toUpperCase();
+    document.getElementById('settingsName').textContent = user.fullName;
+    document.getElementById('settingsEmail').textContent = user.email;
+    document.getElementById('editFullName').value = user.fullName;
+    document.getElementById('editEmail').value = user.email;
+    document.getElementById('editUsername').value = user.username;
+
+    // Load preferences
+    const preferences = JSON.parse(localStorage.getItem('preferences') || '{}');
+    document.getElementById('emailNotifications').checked = preferences.emailNotifications !== false;
+    document.getElementById('darkMode').checked = preferences.darkMode || false;
+    document.getElementById('autoLogin').checked = preferences.autoLogin || false;
+    document.getElementById('twoFactor').checked = preferences.twoFactor || false;
+    document.getElementById('loginAlerts').checked = preferences.loginAlerts !== false;
+    
+    // Check if saved image exists to restore display state
+    const savedImage = localStorage.getItem('dashboardImage');
+    if (savedImage) {
+      dashboardImg.style.display = 'block';
+    }
+  }
+
+  // Update user data
+  function updateUserData(user) {
+    currentUser = user;
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    
+    // Update in registered users array
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const index = registeredUsers.findIndex(u => u.username === user.username || u.email === user.email);
+    if (index !== -1) {
+      registeredUsers[index] = user;
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+    }
+
+    showMainPage(user);
+  }
+
+  // Load saved data
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedUsername = localStorage.getItem('savedUsername');
+    const savedPassword = localStorage.getItem('savedPassword');
+    const savedFullName = localStorage.getItem('savedFullName');
+    const savedEmail = localStorage.getItem('savedEmail');
+    
+    checkLogin();
+    
+    if (savedUsername && savedPassword && !localStorage.getItem('currentUser')) {
+      usernameInput.value = savedUsername;
+      passwordInput.value = savedPassword;
+      rememberMeCheckbox.checked = true;
+      
+      if (savedFullName) {
+        displayFullName.textContent = savedFullName;
+        displayUsername.textContent = savedUsername;
+        userInfoDisplay.classList.remove('hidden');
+      }
+    }
+    
+    if (savedEmail) {
+      document.getElementById('regEmail').value = savedEmail;
+    }
+  });
+
+  // Toggle forms
+  showRegister.addEventListener('click', () => {
+    loginForm.classList.add('hidden');
+    registerForm.classList.remove('hidden');
+    formTitle.textContent = 'Register';
+    clearMessages();
+  });
+
+  showLogin.addEventListener('click', () => {
+    registerForm.classList.add('hidden');
+    loginForm.classList.remove('hidden');
+    formTitle.textContent = 'Login';
+    clearMessages();
+  });
+
+  function clearMessages() {
+    document.getElementById('loginError').style.display = 'none';
+    document.getElementById('registerError').style.display = 'none';
+    document.getElementById('registerSuccess').style.display = 'none';
+  }
+
+  // Settings menu events
+  settingsBtn.addEventListener('click', toggleSettings);
+  
+  closeSettings.addEventListener('click', toggleSettings);
+
+  settingsOverlay.addEventListener('click', toggleSettings);
+
+  // Edit profile
+  editProfileForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const editSuccess = document.getElementById('editSuccess');
+    const editError = document.getElementById('editError');
+    
+    const newFullName = document.getElementById('editFullName').value;
+    const newEmail = document.getElementById('editEmail').value;
+    const newUsername = document.getElementById('editUsername').value;
+
+    editSuccess.style.display = 'none';
+    editError.style.display = 'none';
+
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+
+    // Check if username is taken by another user
+    const usernameExists = registeredUsers.some(u => u.username === newUsername && u.email !== currentUser.email);
+    if (usernameExists) {
+      editError.textContent = 'Username already taken';
+      editError.style.display = 'block';
+      return;
+    }
+
+    // Check if email is taken by another user
+    const emailExists = registeredUsers.some(u => u.email === newEmail && u.username !== currentUser.username);
+    if (emailExists) {
+      editError.textContent = 'Email already in use';
+      editError.style.display = 'block';
+      return;
+    }
+
+    // Update user
+    const updatedUser = {
+      ...currentUser,
+      fullName: newFullName,
+      email: newEmail,
+      username: newUsername
+    };
+
+    updateUserData(updatedUser);
+    localStorage.setItem('savedFullName', newFullName);
+    localStorage.setItem('savedEmail', newEmail);
+    localStorage.setItem('savedUsername', newUsername);
+
+    editSuccess.textContent = 'Profile updated successfully!';
+    editSuccess.style.display = 'block';
+  });
+
+  // Change password
+  changePasswordForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const passwordSuccess = document.getElementById('passwordSuccess');
+    const passwordError = document.getElementById('passwordError');
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+    passwordSuccess.style.display = 'none';
+    passwordError.style.display = 'none';
+
+    // Verify current password
+    if (currentPassword !== currentUser.password) {
+      passwordError.textContent = 'Current password is incorrect';
+      passwordError.style.display = 'block';
+      return;
+    }
+
+    // Check new password matches
+    if (newPassword !== confirmNewPassword) {
+      passwordError.textContent = 'New passwords do not match';
+      passwordError.style.display = 'block';
+      return;
+    }
+
+    // Check password length
+    if (newPassword.length < 4) {
+      passwordError.textContent = 'Password must be at least 4 characters';
+      passwordError.style.display = 'block';
+      return;
+    }
+
+    // Update password
+    const updatedUser = {
+      ...currentUser,
+      password: newPassword
+    };
+
+    updateUserData(updatedUser);
+
+    // Clear form
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmNewPassword').value = '';
+
+    passwordSuccess.textContent = 'Password changed successfully!';
+    passwordSuccess.style.display = 'block';
+  });
+
+  // Preferences
+  preferencesForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const prefSuccess = document.getElementById('prefSuccess');
+    
+    const preferences = {
+      emailNotifications: document.getElementById('emailNotifications').checked,
+      darkMode: document.getElementById('darkMode').checked,
+      autoLogin: document.getElementById('autoLogin').checked
+    };
+
+    localStorage.setItem('preferences', JSON.stringify(preferences));
+
+    // Apply dark mode
+    if (preferences.darkMode) {
+      document.body.style.background = '#1a1a1a';
+      document.body.style.color = '#fff';
+    } else {
+      document.body.style.background = '#f4f4f4';
+      document.body.style.color = '';
+    }
+
+    prefSuccess.textContent = 'Preferences saved!';
+    prefSuccess.style.display = 'block';
+    
+    setTimeout(() => {
+      prefSuccess.style.display = 'none';
+    }, 2000);
+  });
+
+  // Security settings
+  securityForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const prefSuccess = document.getElementById('prefSuccess');
+    
+    const preferences = JSON.parse(localStorage.getItem('preferences') || '{}');
+    preferences.twoFactor = document.getElementById('twoFactor').checked;
+    preferences.loginAlerts = document.getElementById('loginAlerts').checked;
+
+    localStorage.setItem('preferences', JSON.stringify(preferences));
+
+    prefSuccess.textContent = 'Security settings updated!';
+    prefSuccess.style.display = 'block';
+    
+    setTimeout(() => {
+      prefSuccess.style.display = 'none';
+    }, 2000);
+  });
+
+  // Login
+  loginForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const u = usernameInput.value;
+    const p = passwordInput.value;
+    const rememberMe = rememberMeCheckbox.checked;
+    const loginError = document.getElementById('loginError');
+
+    if (rememberMe) {
+      localStorage.setItem('savedUsername', u);
+      localStorage.setItem('savedPassword', p);
+    } else {
+      localStorage.removeItem('savedUsername');
+      localStorage.removeItem('savedPassword');
+    }
+
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const user = registeredUsers.find(user => user.username === u && user.password === p);
+
+    if (user) {
+      localStorage.setItem('savedFullName', user.fullName);
+      localStorage.setItem('savedEmail', user.email);
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      
+      displayFullName.textContent = user.fullName;
+      displayUsername.textContent = user.username;
+      userInfoDisplay.classList.remove('hidden');
+      
+      showMainPage(user);
+    } else if (registeredUsers.length > 0) {
+      loginError.textContent = 'Invalid username or password';
+      loginError.style.display = 'block';
+      userInfoDisplay.classList.add('hidden');
+    } else {
+      if (p === 'password') {
+        const demoUser = { fullName: u, username: u, email: 'demo@example.com', password: p, createdAt: new Date().toISOString() };
+        localStorage.setItem('currentUser', JSON.stringify(demoUser));
+        showMainPage(demoUser);
+      } else {
+        loginError.textContent = 'Invalid password (try "password")';
+        loginError.style.display = 'block';
+      }
+    }
+  });
+
+  // Logout
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('currentUser');
+    settingsMenu.classList.remove('open');
+    settingsOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+    mainPage.classList.add('hidden');
+    loginPage.classList.remove('hidden');
+    usernameInput.value = '';
+    passwordInput.value = '';
+    userInfoDisplay.classList.add('hidden');
+  });
+
+  // Delete account
+  deleteAccountBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const updatedUsers = registeredUsers.filter(u => u.email !== currentUser.email);
+      localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
+      
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('savedUsername');
+      localStorage.removeItem('savedPassword');
+      localStorage.removeItem('savedFullName');
+      localStorage.removeItem('savedEmail');
+      localStorage.removeItem('preferences');
+      
+      settingsMenu.classList.remove('open');
+      settingsOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+      mainPage.classList.add('hidden');
+      loginPage.classList.remove('hidden');
+      usernameInput.value = '';
+      passwordInput.value = '';
+      userInfoDisplay.classList.add('hidden');
+      
+      alert('Your account has been deleted.');
+    }
+  });
+
+  // Register
+  registerForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('regEmail').value;
+    const u = document.getElementById('regUsername').value;
+    const p = document.getElementById('regPassword').value;
+    const cp = document.getElementById('confirmPassword').value;
+    const registerError = document.getElementById('registerError');
+    const registerSuccess = document.getElementById('registerSuccess');
+
+    registerError.style.display = 'none';
+    registerSuccess.style.display = 'none';
+
+    if (p !== cp) {
+      registerError.textContent = 'Passwords do not match';
+      registerError.style.display = 'block';
+      return;
+    }
+
+    if (p.length < 4) {
+      registerError.textContent = 'Password must be at least 4 characters';
+      registerError.style.display = 'block';
+      return;
+    }
+
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+
+    if (registeredUsers.some(user => user.username === u)) {
+      registerError.textContent = 'Username already exists';
+      registerError.style.display = 'block';
+      return;
+    }
+
+    if (registeredUsers.some(user => user.email === email)) {
+      registerError.textContent = 'Email already registered';
+      registerError.style.display = 'block';
+      return;
+    }
+
+    const newUser = {
+      fullName: fullName,
+      email: email,
+      username: u,
+      password: p,
+      createdAt: new Date().toISOString()
+    };
+    
+    registeredUsers.push(newUser);
+    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+    localStorage.setItem('savedEmail', email);
+
+    registerSuccess.textContent = 'Registration successful! Please log in.';
+    registerSuccess.style.display = 'block';
+
+    document.getElementById('fullName').value = '';
+    document.getElementById('regUsername').value = '';
+    document.getElementById('regPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+
+    setTimeout(() => {
+      showLogin.click();
+    }, 1500);
+  });
+</script>
+
+</body>
+</html>
